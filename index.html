@@ -94,6 +94,10 @@
                     to identify patterns and potential leverage points for policy interventions aimed at increasing
                     socioeconomic diversity in higher education.</p>
             </section>
+            <section> <h2> Design Choice for Webpage</h2>
+                <p>We chose to split the visualization and the write-up on our webpage into a left and right panel. We made this choice so the viewer could interact simultaneously with the visualization (on the left) and the description (on the right). As you can see, we made the right panel scrollable so the viewer could seamlessly scan through information about the dataset while tinkering with the data visualization and observing patterns based on it. We felt this was a more intriguing method of capturing the reader’s attention rather than having the reader scroll down constantly to understand the data and scroll up to play with the interactive visualization. From a design perspective, the left and right panels look more coherent rather than having the write-up below the visualization. After all, this makes the webpage “interactive”. As a bonus, we changed the general background to a cream color to make it pleasant for the viewers’ eyes. As a team, we felt content with the final design choice for the webpage, especially the scrollable option for the right panel of information.</p> 
+            </section>
+               
             <section>
                 <h2>Rationale for Design Decisions</h2>
                 <h3>Visual Encodings</h3>
@@ -102,20 +106,21 @@
                 <p><strong>Size:</strong> Bubble size represents the <code>attend</code> variable, highlighting
                     attendance disparities across institutions.</p>
                 <h3>Interaction Techniques</h3>
-                <p><strong>Dropdown Menus:</strong> Allow switching X, Y, and School Type variables for flexibility in
-                    exploration.</p>
+                <p><strong>Dynamic Filters:</strong> Allow switching X, Y, and School Type variables for a dynamic experience for users. Users can utilize these choices to further explore and interact with the visualization. 
+                </p>
+                
+                <p><strong>Dynamic Filter/Brush and Linking:</strong> Our group decided to implement a mix of dynamic queries and Brushing and linking into our visualization. Since we wanted to provide users the ability to take a closer look at certain schools and portions of data, but we understood it may be difficult to precisely select schools by "brushing" over portions of the dataset, we elected to allow users to "select" specific schools to analyze. This would be represented by having a dynamically changing 2nd bar chart that would showcase a specific schools information. When hovering over a point of data in this vis, users can see a more details into each data bar. Furthermore, when a school is selected, this school is highlighted in the first visualization as well for clarity reasons.
+                </p>
 
                 <p><strong>Tooltips:</strong> Provide on-demand information about institutions to prevent visual
-                    clutter.</p>
-                <h3>Alternatives Considered</h3>
-                <p>Brushing and linking were considered but deemed too complex. A legend was also considered but omitted
-                    due to space constraints.</p>
+                    clutter. The information showcased depends on the visualization selected.</p>
+
             </section>
             <section>
                 <h2>Development Process Overview</h2>
                 <h3>Team Members:</h3>
                 <ul>
-                    <li><strong>Justin Pham:</strong> Coding and Javascript Setup </li>
+                    <li><strong>Justin Pham:</strong> Infographics, Dataset Config, and Javascript Setup </li>
                     <li><strong>Aryan Bhupalam:</strong> Webpage Setup and Styling </li>
                     <li><strong>Muhammad Ramamni:</strong> Writeup and video walkthrough</li>
                 </ul>
