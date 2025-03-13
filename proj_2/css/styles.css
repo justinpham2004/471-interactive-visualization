@@ -1,54 +1,100 @@
-/* Reset default styles */
+/* Reset / Base */
 * {
-    font-family: Arial, sans-serif;
-    max-width: 800px;
-    margin: 0px auto;
-    line-height: 1.8;
-}
-
-/* Container styling for layout */
-.container {
-    max-width: 800px;
-    margin: 2rem auto;
-    font-family: Arial, sans-serif;
-}
-
-#tooltip {
-    position: absolute; /* So we can move it with the cursor */
-    padding: 10px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    pointer-events: none; /* Prevent tooltip from interfering with mouse events */
-    font-size: 12px;
-}
-
-
-#vis svg {
-    margin: 2rem 0;
-    border: 1px solid #ccc; /*otherwise you can't see this part*/
-}
-
-.x-axis path,
-.y-axis path,
-.x-axis line,
-.y-axis line {
+    box-sizing: border-box;
+    margin: 20;
+    padding: 20;
+  }
+  
+  /* Light cream background for the entire page */
+  body {
+    background-color: #fdfbf2;
+    font-family: 'Merriweather', serif; 
+    color: #333;
+    overflow-y: auto; /* Let the entire page scroll, if needed */
+  }
+  
+  /* MAIN LAYOUT: Side-by-side panels with minimal space around them */
+  .main-layout {
+    display: flex;
+    gap: 30px;       /* Smaller gap between columns than 500px */
+    margin: 10px;    /* Reduced from 20px to 10px to shrink outer cream margin */
+    justify-content: center;
+  }
+  
+  /* LEFT PANEL: 
+     - Keep the chart from being overly wide so there’s room for the right panel.
+     - No fixed height => the page can scroll if the chart is tall.
+  */
+  .left-panel {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 20px;
+  }
+  
+  /* Adjust the SVG size to comfortably fit next to the right panel on typical screens */
+  #vis svg {
+    width: 800px;   /* Was 800px; reduce so the right panel can fit comfortably */
+    height: 600px;  /* Keep enough height for axes/labels */
+    border: 1px solid #ccc; 
+    display: block;
+    margin-top: 20px;
+  }
+  
+  /* RIGHT PANEL: 
+     - Fixed width so it sits neatly beside the left.
+     - Scrolling if content is long, with a max-height to keep it from expanding too far.
+  */
+  .right-panel {
+    width: 600px;            /* Reduced from 1000px so it fits side-by-side more tightly */
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 800px;       /* If content goes beyond 800px tall, scrollbar appears */
+  }
+  
+  /* Some spacing for the controls area */
+  .controls {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  /* For dropdowns and such */
+  select, button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    font-size: 14px;
+  }
+  
+  /* Axis styling, if used */
+  .x-axis path,
+  .y-axis path,
+  .x-axis line,
+  .y-axis line {
     stroke: #333;
     shape-rendering: crispEdges;
-}
-
-.x-axis text,
-.y-axis text {
+  }
+  
+  .x-axis text,
+  .y-axis text {
     font-size: 12px;
-    font-family: Arial, sans-serif;
-}
-
-.axis-label {
+  }
+  
+  .axis-label {
     font-size: 14px;
     font-weight: bold;
-}
-
-button {
-    padding: 8px 16px;
-    margin-right: 10px;
-}
+  }
+  
+  /* Tooltip styling (unchanged) */
+  #tooltip {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    pointer-events: none;
+    font-size: 12px;
+  }
+  

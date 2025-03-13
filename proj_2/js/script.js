@@ -1,311 +1,496 @@
 // Verify script is working
 console.log('Script loaded successfully!');
-/* Why: Immediate feedback in console */
+
+// Listen for the window load event
 window.addEventListener('load', init);
 
-
+// Margin and dimensions
 const margin = {top: 80, right: 60, bottom: 60, left: 100};
 const width = 800 - margin.left - margin.right;
 const height = 600 - margin.top - margin.bottom;
 
-const colorScale = d3.scaleOrdinal(d3.schemeCategory10); // d3.schemeSet2 is a set of predefined colors. ]
-//Consider using this for our own personal data
-const t = 1000;
-//const options = [super_opeid	name	par_income_bin	par_income_lab	attend	stderr_attend	attend_level	attend_sat	stderr_attend_sat	attend_level_sat	rel_apply	stderr_rel_apply	rel_attend	stderr_rel_attend	rel_att_cond_app	rel_apply_sat	stderr_rel_apply_sat	rel_attend_sat	stderr_rel_attend_sat	rel_att_cond_app_sat]
-let allData = []
-let xScale, yScale, sizeScale
-let xVar = 'par_income_bin', yVar = 'attend_level_sat', sizeVar = 'attend', schoolVar = 'Ivy Plus'
-let tiers = new Set()
+// Color scale
+const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
+// Transition duration (ms)
+const t = 1000;
+
+// Global data and scales
+let allData = [];
+let xScale, yScale, sizeScale;
+let xVar = 'par_income_bin', 
+    yVar = 'attend_level_sat', 
+    sizeVar = 'attend', 
+    schoolVar = 'Ivy Plus',
+    specificSchool = 'American University';
+
+let tiers = new Set();
+let schools = new Set();
+let selected_schools = new Set()
+
+// List of possible variables for x and y dropdowns
 const options = [
-    //"super_opeid",
-    //"name",
     "par_income_bin",
-    //"par_income_lab",
     "attend",
-    //"stderr_attend",
     "attend_level",
     "attend_sat",
-    //"stderr_attend_sat",
-    //"attend_level_sat",
     "rel_apply",
-    //"stderr_rel_apply",
     "rel_attend",
-    //"stderr_rel_attend",
-    "rel_att_cond_app",
-    //"public",
-    //"flagship",
-    //"tier",
-    //"tier_name",
-    //"test_band_tier"
+    "rel_att_cond_app"
 ];
 
+const desc_labels = { 
+    "par_income_bin": "Parental Income Level",
+    "attend" : "Attendance Rate",
+    "attend_level" : "Normalized Attendance Rate",
+    "attend_sat" : "Attendance by SAT",
+    "rel_apply" : "Relative Applications",
+    "rel_attend": "Relative Attendance",
+    "rel_att_cond_app": "Conditional Application"}
+
+
+// Create an SVG
+const svg = d3.select('#vis')
+  .append('svg')
+  .attr('width', width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+const svg2 = d3.select('#vis')
+  .append('svg')
+  .attr('width', width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+
 function init() {
-    d3.csv('data/CollegeAdmissions_Data.csv',
-        d => ({
+  // Load CSV data
+  d3.csv('data/CollegeAdmissions_Data.csv', d => ({
+    name: d.name,
+    par_income_bin: +d.par_income_bin,
+    par_income_lab: +d.par_income_lab,
+    attend: +d.attend,
+    attend_level: +d.attend_level,
+    attend_sat: +d.attend_sat,
+    attend_level_sat: +d.attend_level_sat,
+    rel_apply: +d.rel_apply,
+    rel_attend: +d.rel_attend,
+    rel_att_cond_app: +d.rel_att_cond_app,
+    rel_apply_sat: +d.rel_apply_sat,
+    rel_attend_sat: +d.rel_attend_sat,
+    rel_att_cond_app_sat: +d.rel_att_cond_app_sat,
+    public: d.public,
+    flagship: d.flagship,
+    tier: d.tier,
+    tier_name: d.tier_name,
+    test_band_tier: d.test_band_tier
+  }))
+  .then(data => {
+    // Collect unique tiers
+    data.forEach(d => {
+      tiers.add(d.tier);
+      schools.add(d.name)
+    });
+    console.log('Loaded Data:', data);
 
-                name: d.name,
-                par_income_bin: +d.par_income_bin,
-                par_income_lab: +d.par_income_lab,
-                attend: +d.attend,
-                attend_level: +d.attend_level,
-                attend_sat: +d.attend_sat,
-                attend_level_sat: +d.attend_level_sat,
-                rel_apply: +d.rel_apply,
-                rel_attend: +d.rel_attend,
-                rel_att_cond_app: +d.rel_att_cond_app,
-                rel_apply_sat: +d.rel_apply_sat,
-                rel_attend_sat: +d.rel_attend_sat,
-                rel_att_cond_app_sat: +d.rel_att_cond_app_sat,
-                public: d.public,
-                flagship: d.flagship,
-                tier: d.tier,
-                tier_name: d.tier_name,
-                test_band_tier: d.test_band_tier
+    // Store data globally
+    allData = data;
+    sortedSchools = Array.from(schools)
+    sortedSchools.sort()
+    console.log(schools)
+    // Setup dropdown selectors, axes, visualization
+    setupSelector();
+    updateAxes();
+    updateVis();
 
-
-            
-        })
-    )
-    //callback function
-    .then(data => {
-
-        data.forEach(d => {
-            tiers.add(d.tier); // Replace 'tier_name' with the attribute you're interested in
-        });
-        
-        console.log(data)
-        allData = data
-        //build vis and listeners
-        setupSelector()     
-        updateAxes()
-        updateVis()
-        //addLegend()
-    })
-    .catch(error => console.error('Error loading data:', error));
-    console.log(tiers)
+    updateAxes2();
+    updateVis2();
+  })
+  .catch(error => console.error('Error loading data:', error));
 }
 
 
-function setupSelector(){
-    // Handles UI changes (sliders, dropdowns)
-    //Slider
-
-    //Selecting options for the dropdown
-    d3.selectAll('.variable')
-        .each(function(){
-            d3.select(this).selectAll('myOptions')
-            .data(options)
-            .enter()
-            .append('option')
-            .text(d => d)
-            .attr("value", d => d)
-        })
-    
-    d3.selectAll('.schoolVar')
+function setupSelector() {
+  // For each dropdown with class 'variable', populate with `options`
+  d3.selectAll('.variable')
     .each(function(){
-        d3.select(this).selectAll('myOptions')
+      d3.select(this).selectAll('option')
+        .data(options)
+        .enter()
+        .append('option')
+        .text(d => desc_labels[d])
+        .attr("value", d => d);
+    });
+
+  // For the school type dropdown, populate with unique tiers
+  d3.selectAll('.schoolVar')
+    .each(function(){
+      d3.select(this).selectAll('option')
         .data(Array.from(tiers))
         .enter()
         .append('option')
         .text(d => d)
-        .attr("value", d => d)
-    })
-    d3.select('#xVariable').property('value', xVar)
-    d3.select('#yVariable').property('value', yVar)
-    //d3.select('#sizeVariable').property('value', sizeVar)
-    d3.select('#schoolVariable').property('value', schoolVar)
-    
-    
-    //Detecting Changes:
-    d3.selectAll('.variable')
-    .each(function() {
-        // ... Loop over each dropdown button
-    })
-    .on("change", function (event) {
-        // Placeholder: we’ll change xVar, yVar, or sizeVar here
-        console.log(d3.select(this).property("id")) // Logs which dropdown (e.g., xVariable)
-        console.log(d3.select(this).property("value")) // Logs the selected value
-        if(d3.select(this).property("id") == "xVariable") {
-            xVar = d3.select(this).property("value")
-        } else if (d3.select(this).property("id") == "yVariable") {
-            yVar = d3.select(this).property("value")
-        } /*else if (d3.select(this).property("id") == "sizeVariable") {
-            sizeVar = d3.select(this).property("value")
-        } */
+        .attr("value", d => d);
+    });
 
-
-
-        updateAxes(); 
-        updateVis();
-    })
-
-    d3.selectAll('.schoolVar')
-    .each(function() {
-        // ... Loop over each dropdown button
-    })
-    .on("change", function (event) {
-        schoolVar = d3.select(this).property("value")
-        updateAxes(); 
-        updateVis();
-    })
-   
-   
-  }
   
-function updateAxes(){
-     //Graph
-     svg.selectAll('.axis').remove()
-     svg.selectAll('.labels').remove()
-     xScale = d3.scaleLinear()
-        .domain([0,d3.max(allData, d => d[xVar])])
-        .range([0, width]);
-    const xAxis = d3.axisBottom(xScale)
+  // Set the default values
+  d3.select('#xVariable').property('value', xVar);
+  d3.select('#yVariable').property('value', yVar);
+  d3.select('#schoolVariable').property('value', schoolVar);
+  d3.select('#specificSchools').property('value',specificSchool)
 
-    svg.append('g')
-        .attr('class','axis')
-        .attr("transform",`translate(0,${height})`)
-        .call(xAxis);
-    
-        
-    // Your turn: Create the y-axis using the same approach.
-    // Use d3.scaleLinear() again.
-    // Adjust .domain(), .range(), and the .attr("transform", ...) to position it on the left.
-    yScale = d3.scaleLinear()
-        .domain([0, d3.max(allData, d => d[yVar])])
-        .range([height, 0]);
-    const yAxis = d3.axisLeft(yScale)
+  // Detect changes in x or y dropdown
+  d3.selectAll('.variable')
+    .on("change", function (event) {
+      const id = d3.select(this).property("id");
+      const val = d3.select(this).property("value");
+      if (id === "xVariable") {
+        xVar = val;
+      } else if (id === "yVariable") {
+        yVar = val;
+      }
+      updateAxes();
+      updateVis();
+      
+      updateAxes2();
+      updateVis2();
+    });
 
-    svg.append('g')
-        .attr('class','axis')
-        .attr("transform", `translate(0, 0)`)
-        .call(yAxis);
-    
-    sizeScale = d3.scaleSqrt()
-        .domain([0, d3.max(allData, d => d[sizeVar])]) // Largest bubble = largest data point 
-        .range([5, 20]); // Feel free to tweak these values if you want bigger or smaller bubbles
+  // Detect changes in school type dropdown
+  d3.selectAll('.schoolVar')
+    .on("change", function (event) {
+      schoolVar = d3.select(this).property("value");
+      updateAxes();
+      updateVis();
 
-    svg.append("text")
-        .attr("x", width / 2)
-        .attr("y", height + margin.bottom - 20)
-        .attr("text-anchor", "middle")
-        .text(xVar) // Displays the current x-axis variable
-        .attr('class', 'labels')
+      updateAxes2();
+      updateVis2();
+    });
+
     
-    // Y-axis label (rotated)
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", -margin.left + 40)
-        .attr("text-anchor", "middle")
-        .text(yVar) // Displays the current y-axis variable
-        .attr('class', 'labels')
+  d3.select('#specificSchools')
+    .on("change", function (event) {
+      specificSchool = d3.select(this).property("value");
+      updateAxes();
+      updateVis();
+      updateVis2();
+      console.log(specificSchool)
+    });
+    
 }
 
 
-function addLegend(){
-    let size = 10
+function updateAxes() {
+  // Remove old axes and labels
+  svg.selectAll('.axis').remove();
+  svg.selectAll('.labels').remove();
 
-    /*
-    svg.selectAll('continentSquare')
-        .data(continents)
-        .enter()
-        .append('rect')
-        .attr("width", size)
-        .attr("height", size)
-        .attr("y", -margin.top/2) 
-        .attr("x", (d, i) => i * (size + 100) + 100)  
-        .style("fill", d => colorScale(d))
-        
+  // X Scale
+  xScale = d3.scaleLinear()
+    .domain([0, d3.max(allData, d => d[xVar])])
+    .range([0, width]);
+  const xAxis = d3.axisBottom(xScale);
 
-    svg.selectAll("continentName")
-        .data(continents)
-        .enter()
-        .append("text")
-        .attr("y", -margin.top/2 + size) // Align vertically with the square
-        .attr("x", (d, i) => i * (size + 100) + 120)  
-        .style("fill", d => colorScale(d))  // Match text color to the square
-        .text(d => d) // The actual continent name
-        .attr("text-anchor", "left")
-        .style('font-size', '13px')
-        */
+  svg.append('g')
+    .attr('class','axis x-axis')
+    .attr("transform",`translate(0,${height})`)
+    .call(xAxis);
+
+  // Y Scale
+  yScale = d3.scaleLinear()
+    .domain([0, d3.max(allData, d => d[yVar])])
+    .range([height, 0]);
+  const yAxis = d3.axisLeft(yScale);
+
+  svg.append('g')
+    .attr('class','axis y-axis')
+    .call(yAxis);
+
+  // Size Scale (for bubble radius)
+  sizeScale = d3.scaleSqrt()
+    .domain([0, d3.max(allData, d => d[sizeVar])])
+    .range([5, 20]);
+
+  // X-axis label
+  svg.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 20)
+    .attr("text-anchor", "middle")
+    .text(xVar)
+    .attr('class', 'labels');
+
+  // Y-axis label (rotated)
+  svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 40)
+    .attr("text-anchor", "middle")
+    .text(yVar)
+    .attr('class', 'labels');
+}
+
+function updateAxes2() {
+  // Remove old axes and labels
+  svg2.selectAll('.axis').remove();
+  svg2.selectAll('.labels').remove();
+
+  /*
+  // X Scale
+  xScale = d3.scaleLinear()
+    .domain([0, d3.max(allData, d => d[xVar])])
+    .range([0, width]);
+  const xAxis = d3.axisBottom(xScale); */
+  
+  xScale2 = d3.scaleBand()
+  .domain(allData.map(d => d[xVar]))  // Set domain to the unique categories in xVar
+  .range([0, width])  // Range corresponds to the width of the chart
+  .padding(0.05);  // Optional: Adds padding between bars
+
+  // Create the x axis based on the band scale
+  const xAxis2 = d3.axisBottom(xScale2)
+    .tickSize(0);
+
+  svg2.append('g')
+    .attr('class','axis x-axis')
+    .attr("transform",`translate(0,${height})`)
+    .call(xAxis2);
+
+  // Y Scale
+  yScale2 = d3.scaleLinear()
+    .domain([0, d3.max(allData, d => d[yVar])])
+    .range([height, 0]);
+  const yAxis2 = d3.axisLeft(yScale2);
+
+  svg2.append('g')
+    .attr('class','axis y-axis')
+    .call(yAxis2);
+
+  // Size Scale (for bubble radius)
+  sizeScale = d3.scaleSqrt()
+    .domain([0, d3.max(allData, d => d[sizeVar])])
+    .range([5, 20]);
+
+  // X-axis label
+  svg2.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + margin.bottom - 20)
+    .attr("text-anchor", "middle")
+    .text(xVar)
+    .attr('class', 'labels');
+
+  // Y-axis label (rotated)
+  svg2.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -margin.left + 40)
+    .attr("text-anchor", "middle")
+    .text(yVar)
+    .attr('class', 'labels');
 }
 
 
-function updateVis(){
-    let currentData = allData.filter(d => d.tier == schoolVar)
 
-    svg.selectAll('.points')
-        // Why use d => d.country as the key?
-        // Because each country is unique in the dataset for the current year. 
-        // This helps D3 know which bubbles to keep, update, or remove.
-        .data(currentData, d => d.name)
-        .join(
-            function(enter){
-                return enter
-                .append('circle')
-                .attr('class', 'points')
-                .attr('cx', d => xScale(d[xVar])) // Position on x-axis
-                .attr('cy', d => yScale(d[yVar])) // Position on y-axis
-                .style('fill', d => colorScale(d.name)) // Assign colors
-                .style('opacity', .5) // Slight transparency for 
-                .on('mouseover', function (event, d) {
-                    console.log(d) // See the data point in the console for debugging
-                    d3.select('#tooltip')
-                    .style("display", 'block') // Make the tooltip visible
-                    .html( // Change the html content of the <div> directly
-                    `<strong>${d.name}</strong><br/>
-                    Type: ${d.public}`)
-                    .style("left", (event.pageX + 20) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-                    // placeholder: show it and fill it with our data value
-                    d3.select(this) // Refers to the hovered circle
-                        .style('stroke', 'black')
-                        .style('stroke-width', '4px')
-                })
-                .on("mouseout", function (event, d) {
-                    d3.select('#tooltip')
-                        .style('display', 'none') // Hide tooltip when cursor leaves
-                    d3.select(this) // Refers to the hovered circle
-                        .style('stroke-width', '0px')
-                    //placeholder: hide it
-                }) 
-                .transition(t)
-                .attr('r',  d => sizeScale(d[sizeVar]))
-                // Apply continent colors
-                //better visibility
-            },
-            function(update){
-                return update
-                .transition(t)
-                .attr('cx', d => xScale(d[xVar]))
-                .attr('cy', d => yScale(d[yVar]))
-                .attr('r',  d => sizeScale(d[sizeVar]))
-                
-            },
-            function(exit){
-                exit.transition(t)
-                .attr('r',0)
-                .remove()
-            }
+
+
+// ------------- UPDATE VISUALIZATION (SCATTERPLOT) ------------- //
+function updateVis() {
+  // Filter the dataset by selected tier
+  let currentData = allData.filter(d => d.tier === schoolVar)
+  let school_names = new Set()
+  
+  currentData.forEach(d => {
+    school_names.add(d.name); // Assuming the school name is stored in `school_name`
+  });
+
+  console.log(school_names)
+  
+  d3.selectAll('.specificSchools')
+  .each(function(){
+    d3.select(this).selectAll('option').remove()
+    d3.select(this).selectAll('option')
+      .data(Array.from(school_names))
+      .enter()
+      .append('option')
+      .text(d => d)
+      .attr("value", d => d)
+    });
+  
+  // Join data to circles
+  svg.selectAll('.points')
+    .data(currentData, d => d.name)
+    .join(
+      enter => enter
+        .append('circle')
+        .attr('class', 'points')
+        .attr('cx', d => xScale(d[xVar]))
+        .attr('cy', d => yScale(d[yVar]))
+        .style('fill', d => colorScale(d.name))
+        .style('opacity', 0.5)
+        .on('mouseover', function (event, d) {
+          d3.select('#tooltip')
+            .style("display", 'block')
+            .html(`
+              <strong>${d.name}</strong><br/>
+              Value: ${d.public}
+            `)
+            // position tooltip near mouse pointer
+            .style("left", (event.pageX + 20) + "px")
+            .style("top", (event.pageY - 28) + "px");
+
+          d3.select(this)
+            .style('stroke', 'black')
+            .style('stroke-width', '4px');
+        })
+        .on('mouseout', function (event, d) {
+          d3.select('#tooltip')
+            .style('display', 'none');
+          d3.select(this)
+            .style('stroke-width', '0px');
+        })
+        .transition()
+        .duration(t)
+        .attr('r', d => sizeScale(d[sizeVar])),
+
+      update => update
+        .transition()
+        .duration(t)
+        .attr('cx', d => xScale(d[xVar]))
+        .attr('cy', d => yScale(d[yVar]))
+        .attr('r', d => sizeScale(d[sizeVar])),
+
+      exit => exit
+        .transition()
+        .duration(t)
+        .attr('r', 0)
+        .remove()
+    );
+  
+  
+  svg.selectAll('.points')
+    .style('stroke', d => {
+    // Apply a black stroke only to the specific point
+    console.log(specificSchool)
+    return d.name == specificSchool ? 'black' : 'none';  // Replace with the name you want to highlight
+  })
+  .style('stroke-width', d => {
+    // Apply a thicker stroke width for the specific point
+    return d.name == specificSchool ? '2px' : '0px';  // Adjust stroke width for highlighting
+  }); 
     
-        )
 }
 
+function updateVis2() {
+  let currentData = allData.filter(d => d.name === specificSchool)
+  console.log(specificSchool + "highlighted")
+  d3.select('#specificSchools').property('value',specificSchool)
 
-// Create SVG
-const svg = d3.select('#vis')
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
+  svg2.selectAll('.points')
+  .data(currentData, d => d.name)
+  .join(
+    enter => enter
+      .append('rect')
+      .attr('class', 'points')
+      .attr('x', d => xScale2(d[xVar]))  // Set the x position of the bar
+      .attr('y', d => yScale2(d[yVar]))  // Set the y position of the bar (based on yScale)
+      .attr('width', xScale2.bandwidth())  // Set the width of each bar
+      .attr('height', d => height - yScale2(d[yVar]))  // Set the height of the bar based on yScale
+      .style('fill', d => colorScale(d.name))  // Set the color of the bar
+      .style('opacity', 0.7)
+      .on('mouseover', function (event, d) {
+        d3.select('#tooltip')
+          .style("display", 'block')
+          .html(`
+            <strong>${d.name}</strong><br/>
+            Income: ${d.par_income_bin}
+            <br/>
+            Relative Attendance: ${d.rel_attend}
+          `)
+          // Position tooltip near mouse pointer
+          .style("left", (event.pageX + 20) + "px")
+          .style("top", (event.pageY - 28) + "px");
 
+        d3.select(this)
+          .style('stroke', 'black')
+          .style('stroke-width', '4px');
+      })
+      .on('mouseout', function (event, d) {
+        d3.select('#tooltip')
+          .style('display', 'none');
+        d3.select(this)
+          .style('stroke-width', '0px');
+      })
+      .transition()
+      .duration(t)
+      .attr('height', d => height - yScale2(d[yVar])),  // Smooth transition for height
 
+    update => update
+      .transition()
+      .duration(t)
+      .attr('x', d => xScale2(d[xVar]))  // Update x position
+      .attr('y', d => yScale2(d[yVar]))  // Update y position
+      .attr('width', xScale2.bandwidth())  // Maintain width of bars
+      .attr('height', d => height - yScale2(d[yVar]))  // Update height of bars
+      .transition()
 
-    
+    , exit => exit
+      .transition()
+      .duration(t)
+      .attr('height', 0)  // Shrink the height of bars on exit
+      .remove()  // Remove the bars that exit
+  );
+  /*
+  svg2.selectAll('.points')
+    .data(currentData, d => d.name)
+    .join(
+      enter => enter
+        .append('circle')
+        .attr('class', 'points')
+        .attr('cx', d => xScale(d[xVar]))
+        .attr('cy', d => yScale(d[yVar]))
+        .style('fill', d => colorScale(d.name))
+        .style('opacity', 0.5)
+        .on('mouseover', function (event, d) {
+          d3.select('#tooltip')
+            .style("display", 'block')
+            .html(`
+              <strong>${d.name}</strong><br/>
+              Type: ${d.public}
+            `)
+            // position tooltip near mouse pointer
+            .style("left", (event.pageX + 20) + "px")
+            .style("top", (event.pageY - 28) + "px");
 
+          d3.select(this)
+            .style('stroke', 'black')
+            .style('stroke-width', '4px');
+        })
+        .on('mouseout', function (event, d) {
+          d3.select('#tooltip')
+            .style('display', 'none');
+          d3.select(this)
+            .style('stroke-width', '0px');
+        })
+        .transition()
+        .duration(t)
+        .attr('r', d => sizeScale(d[sizeVar])),
 
+      update => update
+        .transition()
+        .duration(t)
+        .attr('cx', d => xScale(d[xVar]))
+        .attr('cy', d => yScale(d[yVar]))
+        .attr('r', d => sizeScale(d[sizeVar])),
 
-    //Add y axis label “count”
+      exit => exit
+        .transition()
+        .duration(t)
+        .attr('r', 0)
+        .remove()
+    );
+    */
+}
+
 
