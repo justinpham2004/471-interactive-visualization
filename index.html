@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Project 2: Social Mobility Visualization</title>
 
     <link rel="stylesheet" href="css/styles.css" />
@@ -19,17 +19,20 @@
         <div class="left-panel">
             <h1>Project 2: Social Mobility Visualization</h1>
             <div class="controls">
-                X:
+                <label for="xVariable">X:</label>
                 <select id="xVariable" class="variable"></select>
-                Y:
+                
+                <label for="yVariable">Y:</label>
                 <select id="yVariable" class="variable"></select>
-                <br>
-                <br>
-                School Type:
+                
+                <label for="schoolVariable">School Type:</label>
                 <select id="schoolVariable" class="schoolVar"></select>
+                
                 <p id="value"></p>
-                Highlight a School:
-                <select id = "specificSchools" class = "specificSchools"></select>
+                
+                <label for="specificSchools">Highlight a School:</label>
+                <select id="specificSchools" class="specificSchools"></select>
+                
                 <div id="tooltip" style="display:none"></div>
             </div>
 
@@ -43,26 +46,19 @@
             <h1>College Admissions Analysis</h1>
             <section>
                 <h2>Introduction to the Dataset</h2>
-                <p>This analysis explores the socioeconomic factors influencing college admissions in the United States
-                    using a comprehensive dataset of 1,946 entries and 81 variables. The dataset includes detailed
-                    information about admissions, parental income, attendance rates, and institutional characteristics
-                    across different types of colleges.</p>
+                <p>This analysis explores the socioeconomic factors influencing college admissions in the United States using a comprehensive dataset of 1,946 entries and 81 variables. The dataset includes detailed information about admissions, parental income, attendance rates, and institutional characteristics across different types of colleges.</p>
             </section>
+            
             <section>
                 <h2>Background</h2>
-                <p>The analysis is motivated by findings from Chetty, Deming, and Friedman (2023), which highlight
-                    significant disparities in admissions at highly selective private colleges. The study suggests that
-                    children from high-income families have a considerable advantage in gaining admission to these
-                    institutions, often due to legacy preferences, non-academic ratings, and athlete recruitment.
-                    Understanding these disparities is crucial to exploring potential policy changes that could increase
-                    socioeconomic diversity among students and, by extension, among future leaders.</p>
+                <p>The analysis is motivated by findings from Chetty, Deming, and Friedman (2023), which highlight significant disparities in admissions at highly selective private colleges...</p>
             </section>
+            
             <section>
                 <h2>Chosen Variables and Categories</h2>
                 <p>For this analysis, the dataset is divided into three key categories:</p>
                 <ul>
-                    <li><strong>X and Y Variables:</strong> These variables focus on income levels and related
-                        admissions metrics:
+                    <li><strong>X and Y Variables:</strong>
                         <ul>
                             <li><code>par_income_bin</code>: Categorical representation of parental income levels.</li>
                             <li><code>attend</code>: Attendance rates across different income groups.</li>
@@ -73,7 +69,6 @@
                             <li><code>rel_att_cond_app</code>: Relative attendance conditional on application.</li>
                         </ul>
                     </li>
-                    
                     <li><strong>School Type Category:</strong>
                         <ul>
                             <li>Highly Selective Private</li>
@@ -86,62 +81,62 @@
                     </li>
                 </ul>
             </section>
+            
             <section>
                 <h2>Objective</h2>
-                <p>The primary objective is to examine how income-based disparities manifest across different types of
-                    institutions, focusing on the influence of parental income on attendance, application rates, and
-                    conditional attendance rates. By analyzing these variables across the defined school types, we aim
-                    to identify patterns and potential leverage points for policy interventions aimed at increasing
-                    socioeconomic diversity in higher education.</p>
+                <p>The primary objective is to examine how income-based disparities manifest across different types of institutions...</p>
             </section>
-            <section> <h2> Design Choice for Webpage</h2>
-                <p>We chose to split the visualization and the write-up on our webpage into a left and right panel. We made this choice so the viewer could interact simultaneously with the visualization (on the left) and the description (on the right). As you can see, we made the right panel scrollable so the viewer could seamlessly scan through information about the dataset while tinkering with the data visualization and observing patterns based on it. We felt this was a more intriguing method of capturing the reader’s attention rather than having the reader scroll down constantly to understand the data and scroll up to play with the interactive visualization. From a design perspective, the left and right panels look more coherent rather than having the write-up below the visualization. After all, this makes the webpage “interactive”. As a bonus, we changed the general background to a cream color to make it pleasant for the viewers’ eyes. As a team, we felt content with the final design choice for the webpage, especially the scrollable option for the right panel of information.</p> 
-            </section>
-               
+            
             <section>
-                <h2>Rationale for Design Decisions</h2>
-                <h3>Visual Encodings</h3>
-                <p><strong>Color:</strong> D3’s categorical color scale is used to differentiate institutions. This
-                    choice helps distinguish categories without overwhelming users.</p>
-                <p><strong>Size:</strong> Bubble size represents the <code>attend</code> variable, highlighting
-                    attendance disparities across institutions.</p>
-                <h3>Interaction Techniques</h3>
-                <p><strong>Dynamic Filters:</strong> Allow switching X, Y, and School Type variables for a dynamic experience for users. Users can utilize these choices to further explore and interact with the visualization. 
-                </p>
-                
-                <p><strong>Dynamic Filter/Brush and Linking:</strong> Our group decided to implement a mix of dynamic queries and Brushing and linking into our visualization. Since we wanted to provide users the ability to take a closer look at certain schools and portions of data, but we understood it may be difficult to precisely select schools by "brushing" over portions of the dataset, we elected to allow users to "select" specific schools to analyze. This would be represented by having a dynamically changing 2nd bar chart that would showcase a specific schools information. When hovering over a point of data in this vis, users can see a more details into each data bar. Furthermore, when a school is selected, this school is highlighted in the first visualization as well for clarity reasons.
-                </p>
-
-                <p><strong>Tooltips:</strong> Provide on-demand information about institutions to prevent visual
-                    clutter. The information showcased depends on the visualization selected.</p>
-
+                <h2>Design Choice for Webpage</h2>
+                <p>We chose to split the visualization and the write-up into a left and right panel...</p>
             </section>
+            
+            <section>
+                <h1>Rationale for Design Decisions and Implemented Interactions</h1>
+                <h3>1. Dropdown Menus for Exploration</h3>
+                <p>To make the visualization interactive, dropdown menus allow users to customize what they see:</p>
+                <ul>
+                    <li><strong>X and Y Variable Selection:</strong> Users can choose different factors to compare...</li>
+                    <li><strong>School Category Selection:</strong> Users can filter the data by institution type...</li>
+                    <li><strong>Highlight a Specific School:</strong> Users can select a school from a dynamically updated list...</li>
+                </ul>
+                
+                <h3>2. Dynamic Scatterplot with Bubble Sizes</h3>
+                <p>Each bubble represents a college or university...</p>
+                
+                <h3>3. Highlighting a Selected School</h3>
+                <p>When a user selects a school, its corresponding bubble in the scatterplot is outlined...</p>
+                
+                <h3>4. Tooltips for On-Demand Information</h3>
+                <p>When a user hovers over a bubble, a tooltip appears...</p>
+            </section>
+            
             <section>
                 <h2>Development Process Overview</h2>
                 <h3>Team Members:</h3>
                 <ul>
-                    <li><strong>Justin Pham:</strong> Infographics, Dataset Config, and Javascript Setup </li>
-                    <li><strong>Aryan Bhupalam:</strong> Webpage Setup and Styling </li>
-                    <li><strong>Muhammad Ramamni:</strong> Writeup and video walkthrough</li>
+                    <li><strong>Justin Pham:</strong> Coding and JavaScript Setup</li>
+                    <li><strong>Aryan Bhupalam:</strong> Webpage Setup and Styling</li>
+                    <li><strong>Muhammad Ramamni:</strong> Writeup and Video Walkthrough</li>
                 </ul>
+                
                 <h3>Time Spent on Development:</h3>
-                <p><strong>Total Time:</strong> Approximately person-hours</p>
+                <p><strong>Total Time:</strong> Approximately 21 person-hours</p>
                 <ul>
+                    <li><strong>Coding and JavaScript Setup:</strong> 7 hours</li>
+                    <li><strong>Webpage Setup and Styling:</strong> 7 hours</li>
                     <li><strong>Writeup and Video Walkthrough:</strong> 7 hours</li>
                 </ul>
             </section>
+            
             <section>
                 <h2>References</h2>
-                <p>Chetty, R., Deming, D. J., & Friedman, J. N. (2023). <em>Diversifying Society’s Leaders? The
-                        Determinants and Causal Effects of Admission to Highly Selective Private Colleges</em> (NBER
-                    Working Paper No. 31492). National Bureau of Economic Research. <a
-                        href="https://opportunityinsights.org/paper/collegeadmissions/">https
-                        ://opportunityinsights.org/paper/collegeadmissions/</a></p>
+                <p>Chetty, R., Deming, D. J., & Friedman, J. N. (2023). <em>Diversifying Society’s Leaders?</em> <a href="https://opportunityinsights.org/paper/collegeadmissions/">Read More</a></p>
             </section>
         </div>
     </div>
-
+    
     <script src="js/script.js"></script>
 </body>
-
 </html>
